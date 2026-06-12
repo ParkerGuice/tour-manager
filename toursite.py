@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
-from database import db, User, Tour, Show
+from database import db, User, Tour, Show, SavedShow
 from dotenv import load_dotenv
 import os
 
@@ -87,6 +87,24 @@ def logout():
 def dashboard():
     tours = Tour.query.all()
     return render_template('dashboard.html', tours=tours)
+
+# Save a show
+@app.route('/save_show/<int:show_id>')
+@login_required
+def save_show(show_id):
+    already_saved = SavedShow.query.filter_by(user_id=current_user.id, show_id=show_id).first()
+    if not already_saved:
+        new_save = SavedShow(user_id=current_user.id, show_id=show_id)
+        db.session.add(new_save)
+        db.session.commit()
+    return redirect(request.referrer)
+
+# View saved shows
+@app.route('/saved_shows')
+@login_required
+def saved_shows():
+    saved = SavedShow.query.filter_by(user_id=current_user.id).all()
+    return render_template('saved_shows.html', saved=saved)
 
 # Add tour - admin only
 @app.route('/add_tour', methods=['GET', 'POST'])

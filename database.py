@@ -28,3 +28,10 @@ class Show(db.Model):
     time = db.Column(db.String(50), nullable=False)
     capacity = db.Column(db.Integer)
     notes = db.Column(db.String(500))
+
+class SavedShow(db.Model):
+    __tablename__ = 'saved_show'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    show_id = db.Column(db.Integer, db.ForeignKey('show.id'), nullable=False)
+    show = db.relationship('Show', backref='saved_by')

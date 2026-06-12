@@ -32,17 +32,22 @@
 </head>
 <body>
     <nav class="navbar navbar-dark bg-dark mb-4">
-        <div class="container">
-            <a class="navbar-brand fw-bold" href="/">🎵 Tour Manager</a>
-            <div class="d-flex align-items-center gap-2">
-                <span class="text-white-50 small">👤 {{ current_user.username }}</span>
-                {% if current_user.role == 'admin' %}
-                    <a href="/add_tour" class="btn btn-success btn-sm">+ Add Artist / Tour</a>
-                {% endif %}
-                <a href="/logout" class="btn btn-outline-light btn-sm">Logout</a>
-            </div>
+    <div class="container">
+        <div class="d-flex align-items-center gap-3">
+            <a class="navbar-brand fw-bold mb-0" href="/dashboard">🎵 Upcoming Tours</a>
+            {% if current_user.role == 'viewer' %}
+                <a href="/saved_shows" class="nav-link text-white">My Shows</a>
+            {% endif %}
         </div>
-    </nav>
+        <div class="d-flex align-items-center gap-2">
+            <span class="text-white-50 small">👤 {{ current_user.username }}</span>
+            {% if current_user.role == 'admin' %}
+                <a href="/add_tour" class="btn btn-success btn-sm">+ Add Artist / Tour</a>
+            {% endif %}
+            <a href="/logout" class="btn btn-outline-light btn-sm">Logout</a>
+        </div>
+    </div>
+</nav>
 
     <div class="container">
         <h4 class="mb-4 fw-bold">All Tours</h4>
