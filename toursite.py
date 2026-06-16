@@ -10,7 +10,7 @@ load_dotenv()
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.secret_key = 'your-secret-key'
+app.secret_key = os.environ.get('SECRET_KEY')
 
 db.init_app(app)
 
@@ -23,10 +23,12 @@ def load_user(user_id):
     return User.query.get(int(user_id))
 
 def create_admin():
-    admin = User.query.filter_by(username='admin').first()
+    admin_username = os.environ.get('ADMIN_USERNAME')
+    admin_password = os.environ.get('ADMIN_PASSWORD')
+    admin = User.query.filter_by(username=admin_username).first()
     if not admin:
-        hashed = generate_password_hash('admin123', method='pbkdf2:sha256')
-        admin = User(username='admin', password=hashed, role='admin')
+        hashed = generate_password_hash(admin_password, method='pbkdf2:sha256')
+        admin = User(username=admin_username, password=hashed, role='admin')
         db.session.add(admin)
         db.session.commit()
 
