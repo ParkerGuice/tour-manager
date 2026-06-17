@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from database import db, User, Tour, Show, SavedShow
+from flask_wtf.csrf import CSRFProtect
 from dotenv import load_dotenv
 import os
 
@@ -11,6 +12,8 @@ app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.secret_key = os.environ.get('SECRET_KEY')
+
+csrf = CSRFProtect(app)
 
 db.init_app(app)
 
