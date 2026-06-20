@@ -1,16 +1,27 @@
 from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 from werkzeug.security import generate_password_hash, check_password_hash
 from database import db, User, Tour, Show, SavedShow
+from flask_wtf.csrf import CSRFProtect
 from dotenv import load_dotenv
 import os
 
 load_dotenv()
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///tours.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.secret_key = 'your-secret-key'
+app.secret_key = os.environ.get('SECRET_KEY')
+
+csrf = CSRFProtect(app)
+
+limiter = Limiter(
+    app=app,
+    key_func=get_remote_address,
+    default_limits=["200 per day", "50 per hour"]
+)
 
 db.init_app(app)
 
@@ -23,10 +34,12 @@ def load_user(user_id):
     return User.query.get(int(user_id))
 
 def create_admin():
-    admin = User.query.filter_by(username='admin').first()
+    admin_username = os.environ.get('ADMIN_USERNAME')
+    admin_password = os.environ.get('ADMIN_PASSWORD')
+    admin = User.query.filter_by(username=admin_username).first()
     if not admin:
-        hashed = generate_password_hash('admin123', method='pbkdf2:sha256')
-        admin = User(username='admin', password=hashed, role='admin')
+        hashed = generate_password_hash(admin_password, method='pbkdf2:sha256')
+        admin = User(username=admin_username, password=hashed, role='admin')
         db.session.add(admin)
         db.session.commit()
 
@@ -41,6 +54,7 @@ def home():
 
 # Login
 @app.route('/login', methods=['GET', 'POST'])
+@limiter.limit("5 per minute")
 def login():
     if request.method == 'POST':
         username = request.form['username']
